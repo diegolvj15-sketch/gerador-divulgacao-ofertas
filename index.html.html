@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerador de Divulgação de Ofertas</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#17202a}
+.app{max-width:820px;margin:auto;padding:18px}
+.card{background:#fff;border:1px solid #dfe3e8;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 3px 12px rgba(0,0,0,.05)}
+h1{margin:0 0 6px;font-size:26px}.sub{color:#667085;margin:0;line-height:1.45}
+label{display:block;font-weight:700;margin-bottom:8px}
+input,textarea{width:100%;border:1px solid #ccd2d9;border-radius:12px;padding:13px;font-size:16px;background:#fff}
+textarea{min-height:220px;resize:vertical;line-height:1.55}
+.badge{display:inline-block;margin-top:12px;padding:7px 11px;border-radius:999px;background:#eef2f6;color:#475467;font-size:14px}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+button{border:1px solid #d0d5dd;border-radius:13px;background:#fff;padding:14px;text-align:left;cursor:pointer;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:rgba(37,99,235,.12);-webkit-appearance:none;appearance:none}
+button:hover{background:#f8fafc}
+.category.active{border:2px solid #2563eb;background:#eff6ff}
+.icon{font-size:24px}.name{font-weight:700;margin-top:4px}.desc{font-size:12px;color:#667085;margin-top:3px}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.primary{background:#2563eb;color:white;border-color:#2563eb;font-weight:700}
+.secondary{background:#fff;font-weight:700}
+.status{font-size:14px;color:#475467;margin-top:10px;min-height:18px}
+.tip{font-size:13px;color:#667085;margin-top:10px;line-height:1.4}
+@media(min-width:620px){.grid{grid-template-columns:repeat(3,1fr)}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section class="card">
+<h1>🔥 Gerador de Divulgação</h1>
+<p class="sub">Cole o link, escolha o tipo de produto e gere uma divulgação natural, comercial e pronta para compartilhar.</p>
+<div id="marketBadge" class="badge">Marketplace identificado automaticamente</div>
+</section>
+
+<section class="card">
+<label for="offerLink">1. Link da promoção</label>
+<input id="offerLink" type="url" inputmode="url" placeholder="Cole aqui o link da oferta...">
+</section>
+
+<section class="card">
+<label>2. Escolha a categoria</label>
+<div id="categories" class="grid"></div>
+<p class="tip">💡 Não encontrou uma categoria exata? Use “Ofertas Gerais”.<br>📱 Otimizado para toque no iPhone/Safari.</p>
+</section>
+
+<section class="card">
+<label for="result">3. Divulgação pronta</label>
+<textarea id="result" readonly placeholder="Sua divulgação aparecerá aqui..."></textarea>
+<div class="actions">
+<button id="copyBtn" class="primary" type="button">📋 Copiar divulgação</button>
+<button id="clearBtn" class="secondary" type="button">🧹 Limpar</button>
+</div>
+<div id="status" class="status"></div>
+</section>
+
+</div>
+
+<script>
+const categories=[
+['📺','Eletrônicos','TVs, celulares e eletrônicos'],
+['💻','Informática','PCs, notebooks e acessórios'],
+['🏠','Casa, Mesa e Banho','produtos para sua casa'],
+['👕','Moda','roupas, calçados e acessórios'],
+['✨','Beleza','cosméticos e cuidados pessoais'],
+['🚗','Carros e Veículos','acessórios, peças e automotivos'],
+['🏋️','Esporte e Fitness','treino, academia e esportes'],
+['👶','Bebês e Crianças','produtos para os pequenos'],
+['🐶','Pet','produtos para cães, gatos e pets'],
+['🍳','Cozinha','utensílios e eletrodomésticos'],
+['🧰','Ferramentas','ferramentas e itens para manutenção'],
+['🎮','Games e Entretenimento','games, consoles e acessórios'],
+['📱','Celulares e Acessórios','smartphones, capas e acessórios'],
+['🛋️','Móveis e Decoração','móveis, decoração e organização'],
+['🎒','Acessórios e Utilidades','itens úteis para o dia a dia'],
+['🛒','Ofertas Gerais','outros achados e promoções']
+];
+
+const templates={
+'Eletrônicos':`🔥 Olha o que eu encontrei!
+
+📺 Pra quem estava procurando algo assim, essa oferta merece uma olhada.
+💰 O preço está bem interessante! Dá uma conferida antes que mude.
+
+👉 Confira aqui:
+🔗 {link}`,
+
+'Informática':`💻 Olha esse achado!
+
+Pra quem está procurando computador, notebook ou algum acessório, encontrei essa oferta e resolvi compartilhar. 🔥
+
+💰 Dá uma conferida no preço e nos detalhes.
+
+👉 Veja a oferta:
+🔗 {link}`,
+
+'Casa, Mesa e Banho':`🏠 Olha esse achado para casa!
+
+✨ Encontrei esse produto e achei que valia a pena compartilhar.
+Pode ser uma ótima oportunidade para quem está procurando algo assim.
+
+👉 Dá uma olhada:
+🔗 {link}`,
+
+'Moda':`👕 Olha esse achado de moda!
+
+✨ Encontrei essa oferta e resolvi compartilhar.
+Pra quem estava procurando algo parecido, vale a pena conferir o preço e os detalhes.
+
+👉 Confira:
+🔗 {link}`,
+
+'Beleza':`✨ Olha essa oferta de beleza!
+
+💄 Encontrei esse produto com uma condição interessante e resolvi compartilhar.
+Quem estava procurando algo assim, dá uma olhada!
+
+👉 Confira a oferta:
+🔗 {link}`,
+
+'Carros e Veículos':`🚗 Pra quem gosta de cuidar do carro!
+
+🔧 Encontrei esse produto com um preço interessante e resolvi compartilhar.
+Dá uma olhada nos detalhes e, principalmente, veja se é compatível com o seu veículo.
+
+👉 Confira:
+🔗 {link}`,
+
+'Esporte e Fitness':`🏋️ Olha esse achado para quem gosta de treinar!
+
+🔥 Encontrei essa oferta e achei que valia a pena compartilhar.
+Se você estava procurando algo para treino ou esporte, dá uma conferida.
+
+👉 Veja aqui:
+🔗 {link}`,
+
+'Bebês e Crianças':`👶 Olha esse achado para os pequenos!
+
+💛 Encontrei essa oferta e resolvi compartilhar.
+Pode ser uma boa oportunidade para quem estava procurando esse tipo de produto.
+
+👉 Confira os detalhes:
+🔗 {link}`,
+
+'Pet':`🐶 Olha esse achado para os pets!
+
+🐾 Encontrei essa oferta e achei interessante para quem tem cachorro, gato ou outro companheiro em casa.
+
+👉 Dá uma olhada:
+🔗 {link}`,
+
+'Cozinha':`🍳 Olha esse achado para a cozinha!
+
+🔥 Encontrei essa oferta e resolvi compartilhar.
+Pra quem gosta de praticidade na cozinha, vale a pena conferir.
+
+👉 Confira:
+🔗 {link}`,
+
+'Ferramentas':`🧰 Olha esse achado!
+
+🔧 Encontrei essa oferta de ferramenta e achei interessante para quem gosta de fazer manutenção ou colocar a mão na massa.
+
+👉 Confira o preço:
+🔗 {link}`,
+
+'Games e Entretenimento':`🎮 Olha esse achado!
+
+🔥 Pra quem curte games, encontrei essa oferta e resolvi compartilhar.
+Dá uma conferida no preço e nos detalhes.
+
+👉 Confira:
+🔗 {link}`,
+
+'Celulares e Acessórios':`📱 Olha essa oferta!
+
+🔥 Encontrei esse celular/acessório com uma condição interessante e resolvi compartilhar.
+Vale a pena conferir os detalhes.
+
+👉 Veja aqui:
+🔗 {link}`,
+
+'Móveis e Decoração':`🛋️ Olha esse achado para casa!
+
+✨ Encontrei esse produto e achei que poderia interessar quem está decorando, organizando ou renovando a casa.
+
+👉 Confira:
+🔗 {link}`,
+
+'Acessórios e Utilidades':`✨ Olha esse achado!
+
+🛍️ Encontrei esse produto e achei tão interessante que resolvi compartilhar.
+Sabe aquele tipo de coisa que pode facilitar o dia a dia?
+
+👉 Dá uma olhada:
+🔗 {link}`,
+
+'Ofertas Gerais':`🔥 Olha o que eu encontrei!
+
+🛍️ Achei essa oferta interessante e resolvi compartilhar.
+💰 Dá uma conferida no preço e nos detalhes antes que a promoção mude.
+
+👉 Confira aqui:
+🔗 {link}`
+};
+
+const marketRules=[
+[/mercadolivre|mercadolibre|meli\\.co/i,'Mercado Livre'],
+[/shopee/i,'Shopee'],
+[/amazon\\./i,'Amazon'],
+[/aliexpress/i,'AliExpress'],
+[/magazineluiza|magalu/i,'Magalu'],
+[/casasbahia/i,'Casas Bahia'],
+[/americanas/i,'Americanas'],
+[/kabum/i,'KaBuM!'],
+[/pichau/i,'Pichau'],
+[/terabyteshop/i,'Terabyte Shop']
+];
+
+const link=document.getElementById('offerLink');
+const result=document.getElementById('result');
+const badge=document.getElementById('marketBadge');
+const cats=document.getElementById('categories');
+const status=document.getElementById('status');
+let category='';
+
+categories.forEach(([icon,name,desc])=>{
+const b=document.createElement('button');
+b.type='button';
+b.className='category';
+b.innerHTML=`<div class="icon">${icon}</div><div class="name">${name}</div><div class="desc">${desc}</div>`;
+const activateCategory=()=>{
+category=name;
+document.querySelectorAll('.category').forEach(x=>x.classList.remove('active'));
+b.classList.add('active');
+generate();
+};
+b.onclick=activateCategory;
+b.addEventListener('touchend',(event)=>{
+event.preventDefault();
+activateCategory();
+},{passive:false});
+cats.appendChild(b);
+});
+
+function detectMarket(v){
+for(const[rx,name]of marketRules)if(rx.test(v))return name;
+return '';
+}
+
+function validUrl(v){
+try{
+const u=new URL(v);
+return /^https?:$/.test(u.protocol);
+}catch(e){return false}
+}
+
+function generate(){
+const v=link.value.trim();
+const market=detectMarket(v);
+
+badge.textContent=market ? '🛒 Oferta encontrada em '+market : '🔗 Link de oferta';
+
+if(!v||!category){
+result.value='';
+return;
+}
+
+if(!validUrl(v)){
+result.value='';
+status.textContent='Cole um link válido começando com http:// ou https://.';
+return;
+}
+
+status.textContent='';
+result.value=templates[category].replace('{link}',v);
+
+if(market){
+result.value += `\n\n🛒 Encontrado em: ${market}`;
+}
+}
+
+link.addEventListener('input',generate);
+
+const copyButton=document.getElementById('copyBtn');
+const copyAction=async()=>{
+if(!result.value){
+status.textContent='Escolha uma categoria e informe um link primeiro.';
+return;
+}
+try{
+if(navigator.clipboard && window.isSecureContext){
+await navigator.clipboard.writeText(result.value);
+status.textContent='✅ Divulgação copiada! Agora é só colar onde quiser.';
+}else{
+throw new Error('clipboard indisponível');
+}
+}catch(e){
+result.removeAttribute('readonly');
+result.focus();
+result.select();
+try{document.execCommand('copy');}catch(ignore){}
+result.setAttribute('readonly','readonly');
+status.textContent='📋 O texto foi selecionado. Toque em “Copiar” no menu do iPhone para copiar.';
+}
+};
+copyButton.onclick=copyAction;
+copyButton.addEventListener('touchend',(event)=>{
+event.preventDefault();
+copyAction();
+},{passive:false});
+
+document.getElementById('clearBtn').onclick=()=>{
+link.value='';
+result.value='';
+category='';
+badge.textContent='Marketplace identificado automaticamente';
+status.textContent='';
+document.querySelectorAll('.category').forEach(x=>x.classList.remove('active'));
+};
+</script>
+</body>
+</html>
